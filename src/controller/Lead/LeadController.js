@@ -49,8 +49,22 @@ const getAllLeads = async (req, res) => {
       }
     });
 
+    let pagination = {};
+
+    let totalLeads = await DB.LeadModel.count();
+    pagination.totalItems = totalLeads;
+    pagination.currentPage = page;
+    pagination.totalPages = Math.ceil(totalLeads / limit);
+
     await t.commit();
-    return res.successResponse(false, leads, "All Leads Get Successfully");
+    return res.successResponse(
+      false,
+      {
+        leads,
+        pagination,
+      },
+      "All Leads Get Successfully"
+    );
   } catch (error) {
     console.log("getAllLeads: ", error);
     return res.errorResponse(true, error.message);
