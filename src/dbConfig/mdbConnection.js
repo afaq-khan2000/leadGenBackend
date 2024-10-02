@@ -12,20 +12,18 @@ module.exports = DB;
 // DB_PORT=5432
 
 // create a connection to a database postgres using env variables
-const sequelize = new Sequelize(
-  process.env.DB_NAME,
-  process.env.DB_USERNAME,
-  process.env.DB_PASSWORD,
-  {
-    host: process.env.DB_HOST,
-    dialect: "postgres",
-    port: process.env.DB_PORT,
-    logging: false,
-    // define: {
-    //   timestamps: false,
-    // },
-  }
-)
+const sequelize = new Sequelize(process.env.DB_NAME, process.env.DB_USERNAME, process.env.DB_PASSWORD, {
+  host: process.env.DB_HOST,
+  dialect: "postgres",
+  port: process.env.DB_PORT,
+  logging: true,
+  pool: {
+    max: 10, // Increase this value
+    min: 0,
+    acquire: 30000, // Time to wait before throwing a timeout error
+    idle: 10000, // Time to keep idle connections
+  },
+});
 // sync it
 
 DB.sequelize = sequelize;
