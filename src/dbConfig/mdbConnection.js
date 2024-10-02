@@ -25,7 +25,8 @@ const sequelize = new Sequelize(
     //   timestamps: false,
     // },
   }
-);
+)
+// sync it
 
 DB.sequelize = sequelize;
 DB.Op = Sequelize.Op;

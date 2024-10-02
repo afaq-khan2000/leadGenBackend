@@ -38,16 +38,17 @@ const getAllLeads = async (req, res) => {
         lead.is_unlocked = true;
       } else {
         lead.is_unlocked = false;
+        lead.name = lead.name.split(" ")[0] + "...";
         delete lead.dataValues.tier;
         delete lead.dataValues.credits_required;
         delete lead.dataValues.car_brand_id;
-        delete lead.dataValues.car_model;
         delete lead.dataValues.status;
-        delete lead.dataValues.car_brand_relationship;
         delete lead.dataValues.email;
         delete lead.dataValues.phone;
       }
     });
+
+    console.log("leads: ", JSON.parse(JSON.stringify(leads)));
 
     let pagination = {};
 
