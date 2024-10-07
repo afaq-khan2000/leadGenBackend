@@ -42,7 +42,7 @@ const User = sequelize.define(
     },
     credits: {
       type: DataTypes.FLOAT,
-      defaultValue: 10000,
+      defaultValue: 1000,
     },
   },
   {
