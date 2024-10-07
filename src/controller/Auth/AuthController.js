@@ -10,7 +10,7 @@ const AuthController = {
     let t;
     try {
       t = await DB.sequelize.transaction();
-      const { username, email, password, first_name, last_name, dealership_name } = req.body;
+      const { username, email,phone, password, first_name, last_name, dealership_name } = req.body;
 
       const userExist = await DB.UserModel.findOne({
         where: { email },
@@ -26,6 +26,7 @@ const AuthController = {
         {
           username,
           email,
+          phone,
           password_hash: hashedPassword,
           first_name,
           last_name,

@@ -24,7 +24,8 @@ const sequelize = new Sequelize(process.env.DB_NAME, process.env.DB_USERNAME, pr
     idle: 10000, // Time to keep idle connections
   },
 });
-// sync it
+// sync it and also can alter the table
+// sequelize.sync({ alter: true });
 
 DB.sequelize = sequelize;
 DB.Op = Sequelize.Op;

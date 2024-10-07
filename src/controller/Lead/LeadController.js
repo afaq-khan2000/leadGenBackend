@@ -5,11 +5,27 @@ const getAllLeads = async (req, res) => {
   let t;
   try {
     const { query, user } = req;
-    let { page, limit } = query;
+    let { page, limit, search, sortBy, order } = query;
 
     page = parseInt(page) || 1;
     limit = parseInt(limit) || 10;
     const offset = (page - 1) * limit;
+
+    console.log("query: ", query);
+
+    order = order ? order.toUpperCase() : "ASC";
+    let sortOrder;
+    if (sortBy === "car_brand_name") {
+      sortOrder = [[{ model: DB.CarBrandModel, as: "car_brand_relationship" }, "car_brand_name", order]];
+    } else {
+      sortOrder = [[sortBy || "lead_time", order]];
+    }
+
+    if (search) {
+      search = search.toLowerCase();
+    } else {
+      search = null;
+    }
 
     // get all unlocked leads
     let unlockedLeads = await DB.UnlockLeadModel.findAll({
@@ -22,7 +38,25 @@ const getAllLeads = async (req, res) => {
       // attributes: ["lead_id", "name", "lead_time"],
       limit: limit,
       offset: offset,
-      order: [["lead_time", "DESC"]],
+      order: sortOrder,
+      // search on all attributes
+      where: search
+        ? {
+            [Sequelize.Op.or]: [
+              Sequelize.where(Sequelize.fn("LOWER", Sequelize.col("name")), {
+                [Sequelize.Op.like]: `%${search}%`,
+              }),
+              Sequelize.where(Sequelize.fn("LOWER", Sequelize.col("car_model")), {
+                [Sequelize.Op.like]: `%${search}%`,
+              }),
+              {
+                "$car_brand_relationship.car_brand_name$": {
+                  [Sequelize.Op.like]: `%${search}%`,
+                },
+              },
+            ],
+          }
+        : {},
       include: [
         {
           model: DB.CarBrandModel,
@@ -40,7 +74,6 @@ const getAllLeads = async (req, res) => {
         lead.is_unlocked = false;
         lead.name = lead.name.split(" ")[0] + "...";
         delete lead.dataValues.tier;
-        delete lead.dataValues.credits_required;
         delete lead.dataValues.car_brand_id;
         delete lead.dataValues.status;
         delete lead.dataValues.email;
