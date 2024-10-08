@@ -55,4 +55,7 @@ const UnlockLead = sequelize.define(
 UnlockLead.belongsTo(Lead, { foreignKey: "lead_id", as: "lead_final" });
 UnlockLead.belongsTo(User, { foreignKey: "user_id", as: "user" });
 
+Lead.hasMany(UnlockLead, { foreignKey: "lead_id", as: "unlock_leads" });
+User.hasMany(UnlockLead, { foreignKey: "user_id", as: "unlock_leads" });
+
 module.exports = UnlockLead;
