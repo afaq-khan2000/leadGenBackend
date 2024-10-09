@@ -6,6 +6,7 @@ const validateRequest = require("../../../middleware/validateRequest");
 const { authenticateUser } = require("../../../middleware/authenticateUser");
 
 router.post("/register", validateRequest(signupSchema), AuthController.signup);
+router.post("/verify-email", AuthController.verifyEmail);
 router.post("/login", validateRequest(loginSchema), AuthController.login);
 router.get("/checkout-session", authenticateUser(), AuthController.checkoutSession);
 router.post("/payment/success", AuthController.paymentSuccess);

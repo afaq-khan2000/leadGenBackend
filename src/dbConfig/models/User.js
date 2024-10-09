@@ -48,6 +48,14 @@ const User = sequelize.define(
       type: DataTypes.FLOAT,
       defaultValue: 1000,
     },
+    is_verified: {
+      type: DataTypes.BOOLEAN,
+      defaultValue: false,
+    },
+    verification_code: {
+      type: DataTypes.STRING,
+      allowNull: true,
+    },
   },
   {
     timestamps: false,

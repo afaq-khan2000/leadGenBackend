@@ -24,7 +24,7 @@
     "jsonwebtoken": "^9.0.2",
     "moment": "^2.29.4",
     "mysql2": "^3.6.5",
-    "nodemailer": "^6.9.8",
+    "nodemailer": "^6.9.15",
     "nodemon": "^3.1.4",
     "pg": "^8.13.0",
     "pg-hstore": "^2.3.4",

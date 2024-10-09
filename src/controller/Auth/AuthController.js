@@ -3,6 +3,7 @@ const moment = require("moment");
 const DB = require("../../dbConfig/mdbConnection");
 const { hashPassword, comparePassword } = require("../../Helper/hashPasswordHelper");
 const { generateToken } = require("../../Helper/jwtHelper");
+const { sendMail } = require("../../Helper/mailer");
 const stripe = require("stripe")(process.env.STRIPE_SECRET_KEY);
 
 const AuthController = {
@@ -10,7 +11,7 @@ const AuthController = {
     let t;
     try {
       t = await DB.sequelize.transaction();
-      const { username, email,phone, password, first_name, last_name, dealership_name } = req.body;
+      const { username, email, phone, password, first_name, last_name, dealership_name } = req.body;
 
       const userExist = await DB.UserModel.findOne({
         where: { email },
@@ -21,6 +22,7 @@ const AuthController = {
       }
 
       let hashedPassword = await hashPassword(password);
+      let verification_code = Math.floor(100000 + Math.random() * 900000);
 
       const user = await DB.UserModel.create(
         {
@@ -31,15 +33,56 @@ const AuthController = {
           first_name,
           last_name,
           dealership_name,
+          verification_code,
         },
         { transaction: t }
       );
-
+      
+      let templatePath = path.join(__dirname, "../../templates/verifyEmail.html");
+      let replacements = {
+        username,
+        url: `${process.env.CLIENT_URL}/verify-email?verification_code=${verification_code}`,
+      };
+      
+      let mailOptions = {
+        from: "kafaq885@gmail.com",
+        to: email,
+        subject: "Email Verification",
+      };
+      
+      sendMail(mailOptions, templatePath, replacements);
+      
       await t.commit();
-      return res.successResponse(true, { user }, "User created successfully");
+      return res.successResponse(true, { user }, "Verification link sent to your email. Please verify your email");
     } catch (error) {
       await t.rollback();
       console.log("signup: ", error);
+      return res.errorResponse(true, error.message);
+    }
+  },
+
+  // verify email
+  async verifyEmail(req, res) {
+    try {
+      const { verification_code } = req.body;
+      const user = await DB.UserModel.findOne({
+        where: { verification_code },
+      });
+
+      if (!user) {
+        return res.errorResponse(true, "User not found");
+      }
+
+      await DB.UserModel.update(
+        { is_verified: true, verification_code: null },
+        {
+          where: { verification_code },
+        }
+      );
+
+      return res.successResponse(true, { user }, "User verified successfully");
+    } catch (error) {
+      console.log("verifyEmail: ", error);
       return res.errorResponse(true, error.message);
     }
   },
@@ -54,6 +97,10 @@ const AuthController = {
 
       if (!user) {
         return res.errorResponse(true, "User not found");
+      }
+
+      if (!user.is_verified) {
+        return res.errorResponse(true, "User not verified");
       }
 
       const validPass = await comparePassword(password, user.password_hash);
