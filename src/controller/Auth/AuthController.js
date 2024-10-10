@@ -45,7 +45,7 @@ const AuthController = {
       };
       
       let mailOptions = {
-        from: "kafaq885@gmail.com",
+        from: " dealerpro.io@gmail.com",
         to: email,
         subject: "Email Verification",
       };
