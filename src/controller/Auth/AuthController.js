@@ -209,7 +209,7 @@ const AuthController = {
 
   async paymentSuccess(req, res) {
     try {
-      const { session_id, credits } = req.body;
+      let { session_id, credits } = req.body;
       const session = await stripe.checkout.sessions.retrieve(session_id);
 
       if (session.payment_status === "paid") {
@@ -222,9 +222,11 @@ const AuthController = {
           return res.errorResponse(true, "User not found");
         }
 
+        let newCredits = parseInt(user.credits) + parseInt(credits);
+
         // update user credits in UserModel
         await DB.UserModel.update(
-          { credits: user.credits + credits },
+          { credits: newCredits },
           {
             where: { user_id },
           }
