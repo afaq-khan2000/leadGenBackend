@@ -48,6 +48,7 @@ app.post("/webhook", express.raw({ type: "application/json" }), async (req, res)
     // Prepare data to be sent to your API
     const data = {
       session_id: session.id,
+      credits: session.metadata.credits,
     };
 
     // Axios configuration for API request

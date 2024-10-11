@@ -1,7 +1,10 @@
 const path = require("path");
 const moment = require("moment");
 const DB = require("../../dbConfig/mdbConnection");
-const { hashPassword, comparePassword } = require("../../Helper/hashPasswordHelper");
+const {
+  hashPassword,
+  comparePassword,
+} = require("../../Helper/hashPasswordHelper");
 const { generateToken } = require("../../Helper/jwtHelper");
 const { sendMail } = require("../../Helper/mailer");
 const stripe = require("stripe")(process.env.STRIPE_SECRET_KEY);
@@ -11,7 +14,15 @@ const AuthController = {
     let t;
     try {
       t = await DB.sequelize.transaction();
-      const { username, email, phone, password, first_name, last_name, dealership_name } = req.body;
+      const {
+        username,
+        email,
+        phone,
+        password,
+        first_name,
+        last_name,
+        dealership_name,
+      } = req.body;
 
       const userExist = await DB.UserModel.findOne({
         where: { email },
@@ -37,23 +48,30 @@ const AuthController = {
         },
         { transaction: t }
       );
-      
-      let templatePath = path.join(__dirname, "../../templates/verifyEmail.html");
+
+      let templatePath = path.join(
+        __dirname,
+        "../../templates/verifyEmail.html"
+      );
       let replacements = {
         username,
         url: `${process.env.CLIENT_URL}/verify-email?verification_code=${verification_code}`,
       };
-      
+
       let mailOptions = {
         from: " dealerpro.io@gmail.com",
         to: email,
         subject: "Email Verification",
       };
-      
+
       sendMail(mailOptions, templatePath, replacements);
-      
+
       await t.commit();
-      return res.successResponse(true, { user }, "Verification link sent to your email. Please verify your email");
+      return res.successResponse(
+        true,
+        { user },
+        "Verification link sent to your email. Please verify your email"
+      );
     } catch (error) {
       await t.rollback();
       console.log("signup: ", error);
@@ -118,7 +136,11 @@ const AuthController = {
         created_at: moment().format(),
       });
 
-      return res.successResponse(true, { token, user }, "User logged in successfully");
+      return res.successResponse(
+        true,
+        { token, user },
+        "User logged in successfully"
+      );
     } catch (error) {
       console.log("login: ", error);
       return res.errorResponse(true, error.message);
@@ -128,6 +150,8 @@ const AuthController = {
   async checkoutSession(req, res) {
     try {
       const { user_id } = req.user;
+      const { query } = req;
+      let { credits } = query;
       const user = await DB.UserModel.findOne({
         where: { user_id },
       });
@@ -135,6 +159,8 @@ const AuthController = {
       if (!user) {
         return res.errorResponse(true, "User not found");
       }
+
+      credits = parseInt(credits);
 
       let customer = await stripe.customers.list({
         email: user.email,
@@ -157,11 +183,11 @@ const AuthController = {
             price_data: {
               currency: "aed",
               product_data: {
-                name: "Unlock Leads",
+                name: "Credits",
               },
-              unit_amount: 10000,
+              unit_amount: 1 * 100,
             },
-            quantity: 1,
+            quantity: credits,
           },
         ],
         mode: "payment",
@@ -170,6 +196,7 @@ const AuthController = {
         customer: customer.id,
         metadata: {
           user_id: user.user_id,
+          credits,
         },
       });
 
@@ -182,7 +209,7 @@ const AuthController = {
 
   async paymentSuccess(req, res) {
     try {
-      const { session_id } = req.body;
+      const { session_id, credits } = req.body;
       const session = await stripe.checkout.sessions.retrieve(session_id);
 
       if (session.payment_status === "paid") {
@@ -197,7 +224,7 @@ const AuthController = {
 
         // update user credits in UserModel
         await DB.UserModel.update(
-          { credits: user.credits + 100 },
+          { credits: user.credits + credits },
           {
             where: { user_id },
           }
@@ -207,6 +234,45 @@ const AuthController = {
       }
     } catch (error) {
       console.log("paymentSuccess: ", error);
+      return res.errorResponse(true, error.message);
+    }
+  },
+
+  // get customer's stripe transaction details
+  async getStripeTransactions(req, res) {
+    try {
+      const { user_id } = req.user;
+      const user = await DB.UserModel.findOne({
+        where: { user_id },
+      });
+
+      if (!user) {
+        return res.errorResponse(true, "User not found");
+      }
+
+      let customer = await stripe.customers.list({
+        email: user.email,
+        limit: 1,
+      });
+
+      if (customer.data.length === 0) {
+        return res.errorResponse(true, "No transaction found");
+      }
+
+      customer = customer.data[0];
+
+      // get all purchases by customer
+      let transactions = await stripe.charges.list({
+        customer: customer.id,
+      });
+
+      return res.successResponse(
+        true,
+        { transactions },
+        "Transactions fetched successfully"
+      );
+    } catch (error) {
+      console.log("getStripeTransactions: ", error);
       return res.errorResponse(true, error.message);
     }
   },

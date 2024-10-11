@@ -10,5 +10,6 @@ router.post("/verify-email", AuthController.verifyEmail);
 router.post("/login", validateRequest(loginSchema), AuthController.login);
 router.get("/checkout-session", authenticateUser(), AuthController.checkoutSession);
 router.post("/payment/success", AuthController.paymentSuccess);
+router.get("/stripe-transactions", authenticateUser(), AuthController.getStripeTransactions);
 
 module.exports = router;
