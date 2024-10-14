@@ -128,6 +128,7 @@ const AuthController = {
 
       let token = generateToken({
         user_id: user.user_id,
+        role: user.role,
         email: user.email,
         username: user.username,
         first_name: user.first_name,
