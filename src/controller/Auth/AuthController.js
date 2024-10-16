@@ -44,7 +44,8 @@ const AuthController = {
           first_name,
           last_name,
           dealership_name,
-          verification_code,
+          verification_code: null,
+          is_verified: true,
         },
         { transaction: t }
       );
@@ -64,13 +65,14 @@ const AuthController = {
         subject: "Email Verification",
       };
 
-      sendMail(mailOptions, templatePath, replacements);
+      // sendMail(mailOptions, templatePath, replacements);
 
       await t.commit();
       return res.successResponse(
         true,
         { user },
-        "Verification link sent to your email. Please verify your email"
+        // "Verification link sent to your email. Please verify your email"
+        "User registered successfully"
       );
     } catch (error) {
       await t.rollback();
