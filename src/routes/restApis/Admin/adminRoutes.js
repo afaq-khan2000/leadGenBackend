@@ -19,4 +19,11 @@ router.get(
   AdminController.getStats
 );
 
+router.get(
+  "/unlocked-leads",
+  // authenticateUser(),
+  // authenticateAdmin(),
+  AdminController.getUnlockedLeads
+);
+
 module.exports = router;
