@@ -123,7 +123,7 @@ const AdminController = {
       } else if (sortBy === "unlock_date") {
         sortOrder = [["unlock_date", order]];
       } else if (sortBy === "credits_used") {
-        sortOrder = ["credits_used", order];
+        sortOrder = [["credits_used", order]];
       } else if (sortBy === "lead_time") {
         sortOrder = [[{ model: DB.LeadModel, as: "lead_final" }, "lead_time", order]];
       } else {
