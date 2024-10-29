@@ -35,12 +35,16 @@ const sequelize = new Sequelize(
 // sync it and also can alter the table
 // sequelize.sync({ alter: true });
 
-sequelize.sync().then(async () => {
-  console.log("Database & tables created!");
+sequelize
+  .sync({
+    // alter: true,
+  })
+  .then(async () => {
+    console.log("Database & tables created!");
 
-  // Seed the admin user after syncing
-  await seedAdminUser();
-});
+    // Seed the admin user after syncing
+    await seedAdminUser();
+  });
 
 // Seed the admin user
 async function seedAdminUser() {

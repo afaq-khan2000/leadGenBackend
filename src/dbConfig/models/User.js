@@ -51,7 +51,7 @@ const User = sequelize.define(
     },
     credits: {
       type: DataTypes.FLOAT,
-      defaultValue: 1000,
+      defaultValue: 0,
     },
     is_verified: {
       type: DataTypes.BOOLEAN,
@@ -59,6 +59,10 @@ const User = sequelize.define(
     },
     verification_code: {
       type: DataTypes.STRING,
+      allowNull: true,
+    },
+    trial_period_end: {
+      type: DataTypes.DATE,
       allowNull: true,
     },
   },
