@@ -34,7 +34,7 @@ const AuthController = {
 
       let hashedPassword = await hashPassword(password);
       let verification_code = Math.floor(100000 + Math.random() * 900000);
-      let trial_period_end = moment().add(3, "months").format("YYYY-MM-DD");
+      let trial_period_end = moment().add(1, "months").format("YYYY-MM-DD");
 
       const user = await DB.UserModel.create(
         {
